@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "../ReadConf.h"
+#include "../Logger.h"
 
 struct ListenConf
 {
@@ -33,14 +34,18 @@ public:
     ~TCPServerConf(){}
 
     int Init(ReadConf &readconf);
-    std::vector<ListenConf> getListenConfVector(){return listenConfVector;}
-    std::vector<ConnectConf> getConnectConfVector(){return connectConfVector;}
+    //std::vector<ListenConf> getListenConfVector(){return listenConfVector;}
+    //std::vector<ConnectConf> getConnectConfVector(){return connectConfVector;}
+
+    std::vector<ListenConf> listenConfVector;
+    std::vector<ConnectConf> connectConfVector;
 
 private:
     int listen_num;
     int connect_num;
-    std::vector<ListenConf> listenConfVector;
-    std::vector<ConnectConf> connectConfVector;
+
+private:
+    DECL_LOGGER(logger);
 };
 
 
