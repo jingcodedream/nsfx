@@ -11,10 +11,9 @@
 #include "../ReadConf.h"
 #include "TCPServerConf.h"
 #include "../Logger.h"
-#include "../IOServer.h"
-
 #include <vector>
 #include <sys/epoll.h>
+#include "../IOServerEpoll.h"
 
 #define EPOLLEVENTS 100
 
@@ -26,15 +25,13 @@ public:
 
     int Init(ReadConf &readConf);
 
-    IOServer* GetIOServer(){return &ioServer;}
-
     void RunFover();
 
 private:
     ReadConf readConf;
     TCPServerConf tcpServerConf;
 
-    IOServerEpoll ioServer;
+    IOServerEpoll ioServerEpoll;
 
 private:
     int DoListen();

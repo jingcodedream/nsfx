@@ -28,8 +28,8 @@ int TCPServer::DoListen()
             return -1;
         }
 
-        IOHandle *ioHandleListen = new IOHandleListen(listenFd, &ioServer);
-        ioServer.AddEvent(listenFd, EPOLLIN, ioHandleListen);
+        IOHandle *ioHandleListen = new IOHandleListen(listenFd, ioServerEpoll);
+        ioServerEpoll.AddEvent(listenFd, EPOLLIN, ioHandleListen);
         LOG_DEBUG(logger, "Listen success");
 
     }
@@ -53,7 +53,7 @@ int TCPServer::DoConnect()
         }
 
         IOHandleConnect *ioHandleConnect = new IOHandleConnect();
-        ioServer.AddEvent(connFd, EPOLLIN, ioHandleConnect);
+        ioServerEpoll.AddEvent(connFd, EPOLLIN, ioHandleConnect);
     }
     return 0;
 }
@@ -69,7 +69,7 @@ int TCPServer::Init(ReadConf &readConf)
         return -1;
     }
 
-    ioServer.Init(tcpServerConf.conf_max_event_num);
+    ioServerEpoll.Init(tcpServerConf.conf_max_event_num);
 
     if(tcpServerConf.listenConfVector.size() > 0)
     {
@@ -98,7 +98,7 @@ void TCPServer::RunFover()
 {
     while(true)
     {
-        if(!ioServer.RunFoever())
+        if(!ioServerEpoll.RunFoever())
             break;
     }
 }
