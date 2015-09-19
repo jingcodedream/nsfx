@@ -11,6 +11,7 @@
 #include "../ReadConf.h"
 #include "TCPServerConf.h"
 #include "../Logger.h"
+#include "../IOServer.h"
 
 #include <vector>
 #include <sys/epoll.h>
@@ -20,10 +21,12 @@
 class TCPServer
 {
 public:
-    TCPServer():epollfd(-1){}
-    ~TCPServer(){}
+    TCPServer(){}
+    virtual ~TCPServer(){} //基类要使用虚析构函数，否则基类指针指向子类对象时，不会调用子类析构函数，导致释放不完全
 
-    int Init(ReadConf &readConf, int maxEpollSize);
+    int Init(ReadConf &readConf);
+
+    IOServer* GetIOServer(){return &ioServer;}
 
     void RunFover();
 
@@ -31,26 +34,11 @@ private:
     ReadConf readConf;
     TCPServerConf tcpServerConf;
 
-    std::vector<int> listenFdVector;
-    int epollfd;
-    //struct epoll_event events[EPOLLEVENTS];
+    IOServerEpoll ioServer;
 
 private:
     int DoListen();
     int DoConnect();
-
-    //epoll处理
-    int AddEvent(int fd, int state);
-
-    int DeleteEvent(int fd, int state);
-
-    int ModifyEvent(int fd, int state);
-
-    int EpollWait();
-
-    int OnRead(int fd);
-
-    int OnWrite(int fd);
 
 private:
     DECL_LOGGER(logger);

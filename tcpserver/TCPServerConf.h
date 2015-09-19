@@ -30,7 +30,13 @@ struct ConnectConf
 class TCPServerConf
 {
 public:
-    TCPServerConf():listen_num(0), connect_num(0){}
+    TCPServerConf()
+    {
+        listen_num = 0;
+        connect_num = 0;
+        conf_max_event_num = 0;
+        connect_time = 0;
+    }
     ~TCPServerConf(){}
 
     int Init(ReadConf &readconf);
@@ -39,8 +45,8 @@ public:
 
     std::vector<ListenConf> listenConfVector;
     std::vector<ConnectConf> connectConfVector;
-
-private:
+    int conf_max_event_num;
+    int connect_time;
     int listen_num;
     int connect_num;
 

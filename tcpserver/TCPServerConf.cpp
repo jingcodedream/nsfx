@@ -18,7 +18,13 @@ IMPL_LOGGER(TCPServerConf, logger);
 int TCPServerConf::Init(ReadConf &conf)
 {
     string TCP_SERVER = "TCP_SERVER";
+
+    conf.GetValue(TCP_SERVER, "max_event_num", conf_max_event_num, 65535);
+    conf.GetValue(TCP_SERVER, "connect_time", connect_time, 3);
     conf.GetValue(TCP_SERVER, "listen_num", listen_num, 0);
+    conf.GetValue(TCP_SERVER, "connect_num", connect_num, 0);
+    LOG_DEBUG(logger, "ListenConf,TCP_SERVER="<<TCP_SERVER<<",max_event_num="<<conf_max_event_num\
+            <<",connect_time="<<connect_time<<",listen_num="<<listen_num<<",connect_num="<<connect_num);
 
     for(int i = 0;i < listen_num;++i)
     {
@@ -39,8 +45,7 @@ int TCPServerConf::Init(ReadConf &conf)
         listenConfVector.push_back(listenConfTemp);
     }
 
-    conf.GetValue(TCP_SERVER, "connect_num", connect_num, 0);
-    for(int i = 0;i < connect_num;++i)
+    for(int i = 0;i < connect_num; ++i)
     {
         ostringstream os;
         os << "CONNECT_CONF_" << i;

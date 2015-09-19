@@ -25,7 +25,7 @@ int main()
     }
 
     TCPServerTest tcpServerTest;
-    if(tcpServerTest.Init(conf, 100) < 0)
+    if(tcpServerTest.Init(conf) < 0)
     {
         std::cout << "tcpServer init error" << std::endl;
         return -1;
