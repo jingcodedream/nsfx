@@ -13,7 +13,8 @@
 #include "../Logger.h"
 #include <vector>
 #include <sys/epoll.h>
-#include "../IOServerEpoll.h"
+
+#include "../IOServer.h"
 
 #define EPOLLEVENTS 100
 
@@ -25,7 +26,7 @@ public:
 
     int Init(ReadConf &readConf);
 
-    void RunFover();
+    void RunForever();
 
 private:
     ReadConf readConf;

@@ -13,6 +13,8 @@
 #include <assert.h>
 #include "ReadConf.h"
 
+IMPL_LOGGER(ReadConf, logger);
+
 int ReadConf::Init(const char *fname)
 {
 

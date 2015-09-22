@@ -9,8 +9,6 @@
 
 #include "TCPServer.h"
 
-#include <iostream> //test
-
 IMPL_LOGGER(TCPServer, logger);
 
 int TCPServer::DoListen()
@@ -21,17 +19,16 @@ int TCPServer::DoListen()
     {
         ListenConf listenConfTemp = listenConfVector[i];
         int listenFd = TCPSocket::Listen(listenConfTemp.ip.c_str(), listenConfTemp.port, false, listenConfTemp.backlog);
-        LOG_DEBUG(logger, "Listen, ip="<<listenConfTemp.ip<<",port="<<listenConfTemp.port<<",backlog="<<listenConfTemp.backlog);
+        LOG_DEBUG(logger, "Listen, ip="<<listenConfTemp.ip<<",port="<<listenConfTemp.port<<",backlog="<<listenConfTemp.backlog<<",fd="<<listenFd);
         if(listenFd < 0)
         {
             LOG_ERROR(logger, "listen erro, cause: " << strerror(errno));
             return -1;
         }
 
-        IOHandle *ioHandleListen = new IOHandleListen(listenFd, ioServerEpoll);
+        IOHandle *ioHandleListen = new IOHandleListen(listenFd, &ioServerEpoll);
         ioServerEpoll.AddEvent(listenFd, EPOLLIN, ioHandleListen);
         LOG_DEBUG(logger, "Listen success");
-
     }
     return 0;
 }
@@ -45,7 +42,7 @@ int TCPServer::DoConnect()
         ConnectConf connectConfTemp = connectConfVector[i];
         int connFd = TCPSocket::Connect(connectConfTemp.ip.c_str(), connectConfTemp.port, false, 1000*6);
 
-        LOG_DEBUG(logger, "Listen, ip="<<connectConfTemp.ip<<",port="<<connectConfTemp.port<<",wait_time="<<1000*6);
+        LOG_DEBUG(logger, "Connect, ip="<<connectConfTemp.ip<<",port="<<connectConfTemp.port<<",wait_time="<<1000*6);
         if(connFd < 0)
         {
             LOG_ERROR(logger, "connect error, cause " << strerror(errno));
@@ -54,6 +51,7 @@ int TCPServer::DoConnect()
 
         IOHandleConnect *ioHandleConnect = new IOHandleConnect();
         ioServerEpoll.AddEvent(connFd, EPOLLIN, ioHandleConnect);
+        LOG_DEBUG(logger, "Connect success");
     }
     return 0;
 }
@@ -94,11 +92,11 @@ int TCPServer::Init(ReadConf &readConf)
     return 0;
 }
 
-void TCPServer::RunFover()
+void TCPServer::RunForever()
 {
     while(true)
     {
-        if(!ioServerEpoll.RunFoever())
+        if(!ioServerEpoll.RunForever())
             break;
     }
 }

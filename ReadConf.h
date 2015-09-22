@@ -9,6 +9,8 @@
 #define READCONF_H_
 
 //将配置文件读成一个map
+#include "Logger.h"
+
 #include <string>
 #include <map>
 #include <algorithm>
@@ -53,6 +55,9 @@ private:
         Ltrim(str);
         Rtrim(str);
     }
+
+private:
+    DECL_LOGGER(logger);
 };
 
 #endif /* READCONF_H_ */

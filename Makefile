@@ -8,8 +8,8 @@ all:${OBJS} tcpsvr lib
 
 FLAGS=-g -D__LOG4CPLUS__
 
-${OBJDIR}/%.o:%.cpp
-	g++ -fPIC ${INCLUDE} $< ${FLAGS} -c -o $@
+${OBJDIR}/%.o:%.cpp %.h
+	g++ -fPIC ${INCLUDE} $<  ${FLAGS} -c -o $@
 
 tcpsvr:
 	(cd tcpserver;${MAKE} all)

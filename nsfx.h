@@ -8,6 +8,7 @@
 #ifndef NSFX_H_
 #define NSFX_H_
 
+#include "IOServer.h"
 #include "Logger.h"
 #include "ReadConf.h"
 #include "tcpserver/TCPServer.h"

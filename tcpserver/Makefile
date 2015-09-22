@@ -7,7 +7,7 @@ all:${OBJS}
 
 FLAGS=-g -D__LOG4CPLUS__
 
-${OBJDIR}/%.o:%.cpp
+${OBJDIR}/%.o:%.cpp %.h
 	g++ -fPIC ${INCLUDE} $< ${FLAGS} -c -o $@
 
 clean:
