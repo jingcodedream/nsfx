@@ -31,7 +31,7 @@ int main()
         return -1;
     }
 
-    tcpServerTest.RunFover();
+    tcpServerTest.RunForever();
 
     return 0;
 }

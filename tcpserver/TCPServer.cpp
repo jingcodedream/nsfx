@@ -27,7 +27,8 @@ int TCPServer::DoListen()
         }
 
         IOHandle *ioHandleListen = new IOHandleListen(listenFd, &ioServerEpoll);
-        ioServerEpoll.AddEvent(listenFd, EPOLLIN, ioHandleListen);
+        std::pair<IOEvent, IOEvent> ret_pair = ioServerEpoll.AddEvent(listenFd, EVENT_READ, ioHandleListen);
+        assert(ret_pair.first != EVENT_EMPTY);
         LOG_DEBUG(logger, "Listen success");
     }
     return 0;
@@ -49,8 +50,13 @@ int TCPServer::DoConnect()
             return -1;
         }
 
-        IOHandleConnect *ioHandleConnect = new IOHandleConnect();
-        ioServerEpoll.AddEvent(connFd, EPOLLIN, ioHandleConnect);
+        IOHandleConnect *ioHandleConnect = new IOHandleConnect(&ioServerEpoll);
+        std::pair<IOEvent, IOEvent> ret_pair = ioServerEpoll.AddEvent(connFd, EVENT_READ, ioHandleConnect);
+        if(ret_pair.first == EVENT_EMPTY)
+        {
+            LOG_ERROR(logger, "connect error");
+            return -1;
+        }
         LOG_DEBUG(logger, "Connect success");
     }
     return 0;

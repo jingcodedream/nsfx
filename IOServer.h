@@ -13,33 +13,81 @@
 #include <map>
 #include <sys/epoll.h>
 #include <stdlib.h>
+#include <vector>
 
 #include "Logger.h"
+
+typedef enum _io_status_
+{
+    IO_ERROR,
+    IO_CONTINUE,
+    IO_SUCC,
+}IOStatus;
+
+//io事件
+typedef uint16_t IOEvent;
+#define EVENT_EMPTY    0x0000                    //空
+#define EVENT_READ     0x0001                    //读
+#define EVENT_WRITE    0x0002                    //写
+#define EVENT_RDWT     0x0003                    //读写
+#define EVENT_ERROR    0x0004                    //错误
+
+#define EVENT_HAS_READ(x)  (((x)&EVENT_READ)  != 0) //是否设置读
+#define EVENT_HAS_WRITE(x) (((x)&EVENT_WRITE) != 0) //是否设置写
+#define EVENT_HAS_ERROR(x) (((x)&EVENT_ERROR) != 0) //是否发生错误
 
 class IOHandle
 {
 public:
     IOHandle(){}
     virtual ~IOHandle(){}
-    virtual int OnRead(int fd)=0;
-    virtual int OnWrite(int fd)=0;
+    virtual IOStatus OnRead(int fd)=0;
+    virtual IOStatus OnWrite(int fd)=0;
+    virtual IOStatus OnError(int fd)=0;
 
 private:
 };
 
 class IOServer
 {
+private:
+    class IOEventInfo
+    {
+    public:
+        IOEventInfo()
+            :fd(-1)
+            ,event(EVENT_EMPTY)
+            ,handle(NULL)
+        {}
+
+        int fd;
+        IOEvent event;
+        IOHandle *handle;
+    };
+public:
+    class EventOccur
+    {
+    public:
+        int fd;
+        IOEvent event;
+        EventOccur():fd(-1), event(0){}
+    };
+public:
     IOServer(){}
     virtual ~IOServer(){}
 
     bool RunOnce();
     bool RunForever();
 
-    virtual int AddEvent(int fd, int event,IOHandle *handle)=0;
-    virtual int ModifyEvent(int fd, int event)=0;
-    virtual int DelEvent(int fd, int event)=0;
+    virtual std::pair<IOEvent, IOEvent> AddEvent(int fd, IOEvent event,IOHandle *handle);
+    virtual std::pair<IOEvent, IOEvent> DelEvent(int fd, IOEvent event);
+    virtual bool WaitEvent(std::vector<EventOccur> &eventOccurVector, int wait_ms)=0;
 
-    virtual int WaitEvent();
+private:
+    std::map<int, IOEventInfo> fdIOEventInfoMap;
+
+private:
+    DECL_LOGGER(logger);
 };
 
 class IOServerEpoll:public IOServer
@@ -50,15 +98,15 @@ public:
 
     void Init(int maxEventNum);
 
-    int AddEvent(int fd, int event,IOHandle *handle);
-    int ModifyEvent(int fd, int event);
-    int DelEvent(int fd, int event);
+    std::pair<IOEvent, IOEvent> AddEvent(int fd, IOEvent event,IOHandle *handle);
+    //int ModifyEvent(int fd, int event);
+    std::pair<IOEvent, IOEvent> DelEvent(int fd, IOEvent event);
+    bool WaitEvent(std::vector<EventOccur> &eventOccurVector, int wait_ms);
 
 private:
     int epollFd;
     int maxEventNum;
     struct epoll_event *epollEvent;
-    std::map<int, IOHandle*> fdIOHandleMap;
 
 private:
     DECL_LOGGER(logger);
@@ -68,16 +116,17 @@ private:
 class IOHandleListen:public IOHandle
 {
 public:
-    IOHandleListen(int listenFd, IOServerEpoll *ioServerEpoll):listenFd(listenFd), ioServerEpoll(ioServerEpoll){}
-    int OnRead(int fd);
+    IOHandleListen(int listenFd, IOServer *ioServer):listenFd(listenFd), ioServer(ioServer){}
+    IOStatus OnRead(int fd);
 
 private:
     //IOServer *ioServer;
     int listenFd;
-    IOServerEpoll *ioServerEpoll;
+    IOServer *ioServer;
 
 private:
-    int OnWrite(int fd){return 0;}//实现IOHandle的纯虚函数
+    IOStatus OnWrite(int fd) { return IO_ERROR; }//实现IOHandle的纯虚函数
+    IOStatus OnError(int fd) { return IO_ERROR; }
 
 private:
     DECL_LOGGER(logger);
@@ -86,9 +135,15 @@ private:
 class IOHandleConnect:public IOHandle
 {
 public:
-    IOHandleConnect(){}
-    int OnRead(int fd);
-    int OnWrite(int fd);
+    IOHandleConnect(IOServer *ioServer) : ioServer(ioServer) {}
+    IOStatus OnRead(int fd);
+    IOStatus OnWrite(int fd);
+private:
+    IOStatus OnError(int fd) { return IO_ERROR; }
+
+private:
+    IOServer *ioServer;
+
 private:
     DECL_LOGGER(logger);
 };
