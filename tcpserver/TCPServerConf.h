@@ -13,31 +13,28 @@
 #include "../ReadConf.h"
 #include "../Logger.h"
 
-struct ListenConf
-{
+struct ListenConf {
     string ip;
     int port;
     int backlog;  //队列大小
 };
 
-struct ConnectConf
-{
+struct ConnectConf {
     string ip;
     int port;
     int backlog;  //队列大小
 };
 
-class TCPServerConf
-{
+class TCPServerConf {
 public:
-    TCPServerConf()
-    {
+    TCPServerConf() {
         listen_num = 0;
         connect_num = 0;
         conf_max_event_num = 0;
         connect_time = 0;
     }
-    ~TCPServerConf(){}
+    ~TCPServerConf() {
+    }
 
     int Init(ReadConf &readconf);
     //std::vector<ListenConf> getListenConfVector(){return listenConfVector;}
@@ -51,8 +48,8 @@ public:
     int connect_num;
 
 private:
-    DECL_LOGGER(logger);
+    DECL_LOGGER(logger)
+    ;
 };
-
 
 #endif /* TCPSERVER_TCPSERVERCONF_H_ */

@@ -12,21 +12,17 @@ using namespace std;
 
 #define CONF_NAME "conf/TCPServer.conf"
 
-
-int main()
-{
+int main() {
     INIT_LOGGER("conf/log4cplus.conf");
 
     ReadConf conf;
-    if(conf.Init(CONF_NAME) < 0)
-    {
+    if (conf.Init(CONF_NAME) < 0) {
         std::cout << "conf init error" << std::endl;
         return -1;
     }
 
     TCPServerTest tcpServerTest;
-    if(tcpServerTest.Init(conf) < 0)
-    {
+    if (tcpServerTest.Init(conf) < 0) {
         std::cout << "tcpServer init error" << std::endl;
         return -1;
     }
@@ -35,5 +31,4 @@ int main()
 
     return 0;
 }
-
 

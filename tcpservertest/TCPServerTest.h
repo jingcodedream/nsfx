@@ -10,8 +10,7 @@
 
 #include "../nsfx.h"
 
-class TCPServerTest:public TCPServer
-{
+class TCPServerTest: public TCPServer {
 
 };
 

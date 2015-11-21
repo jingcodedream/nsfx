@@ -16,13 +16,11 @@
 #include <vector>
 
 #include "Logger.h"
+#include "WheelTimer.h"
 
-typedef enum _io_status_
-{
-    IO_ERROR,
-    IO_CONTINUE,
-    IO_SUCC,
-}IOStatus;
+typedef enum _io_status_ {
+    IO_ERROR, IO_CONTINUE, IO_SUCC,
+} IOStatus;
 
 //io事件
 typedef uint16_t IOEvent;
@@ -36,11 +34,12 @@ typedef uint16_t IOEvent;
 #define EVENT_HAS_WRITE(x) (((x)&EVENT_WRITE) != 0) //是否设置写
 #define EVENT_HAS_ERROR(x) (((x)&EVENT_ERROR) != 0) //是否发生错误
 
-class IOHandle
-{
+class IOHandle {
 public:
-    IOHandle(){}
-    virtual ~IOHandle(){}
+    IOHandle() {
+    }
+    virtual ~IOHandle() {
+    }
     virtual IOStatus OnRead(int fd)=0;
     virtual IOStatus OnWrite(int fd)=0;
     virtual IOStatus OnError(int fd)=0;
@@ -48,57 +47,63 @@ public:
 private:
 };
 
-class IOServer
-{
+class IOServer {
 private:
-    class IOEventInfo
-    {
+    class IOEventInfo {
     public:
-        IOEventInfo()
-            :fd(-1)
-            ,event(EVENT_EMPTY)
-            ,handle(NULL)
-        {}
+        IOEventInfo() :
+                fd(-1), event(EVENT_EMPTY), handle(NULL) {
+        }
 
         int fd;
         IOEvent event;
         IOHandle *handle;
     };
 public:
-    class EventOccur
-    {
+    class EventOccur {
     public:
         int fd;
         IOEvent event;
-        EventOccur():fd(-1), event(0){}
+        EventOccur() :
+                fd(-1), event(0) {
+        }
     };
 public:
-    IOServer(){}
-    virtual ~IOServer(){}
+    IOServer() {
+    }
+    virtual ~IOServer() {
+    }
 
     bool RunOnce();
     bool RunForever();
 
-    virtual std::pair<IOEvent, IOEvent> AddEvent(int fd, IOEvent event,IOHandle *handle);
+    virtual std::pair<IOEvent, IOEvent> AddEvent(int fd, IOEvent event, IOHandle *handle);
     virtual std::pair<IOEvent, IOEvent> DelEvent(int fd, IOEvent event);
     virtual bool WaitEvent(std::vector<EventOccur> &eventOccurVector, int wait_ms)=0;
 
 private:
+    WheelTimer m_timer;
     std::map<int, IOEventInfo> fdIOEventInfoMap;
 
 private:
-    DECL_LOGGER(logger);
+    DECL_LOGGER(logger)
+    ;
 };
 
-class IOServerEpoll:public IOServer
-{
+class IOServerEpoll: public IOServer {
 public:
-    IOServerEpoll():epollFd(0),maxEventNum(0),epollEvent(NULL){};
-    ~IOServerEpoll(){};
+    IOServerEpoll() :
+            epollFd(0), maxEventNum(0), epollEvent(NULL) {
+    }
+    ;
+    ~IOServerEpoll() {
+    }
+    ;
 
     void Init(int maxEventNum);
 
-    std::pair<IOEvent, IOEvent> AddEvent(int fd, IOEvent event,IOHandle *handle);
+    std::pair<IOEvent, IOEvent> AddEvent(int fd, IOEvent event,
+            IOHandle *handle);
     //int ModifyEvent(int fd, int event);
     std::pair<IOEvent, IOEvent> DelEvent(int fd, IOEvent event);
     bool WaitEvent(std::vector<EventOccur> &eventOccurVector, int wait_ms);
@@ -109,14 +114,15 @@ private:
     struct epoll_event *epollEvent;
 
 private:
-    DECL_LOGGER(logger);
+    DECL_LOGGER(logger)
+    ;
 };
 
-
-class IOHandleListen:public IOHandle
-{
+class IOHandleListen: public IOHandle {
 public:
-    IOHandleListen(int listenFd, IOServer *ioServer):listenFd(listenFd), ioServer(ioServer){}
+    IOHandleListen(int listenFd, IOServer *ioServer) :
+            listenFd(listenFd), ioServer(ioServer) {
+    }
     IOStatus OnRead(int fd);
 
 private:
@@ -125,26 +131,35 @@ private:
     IOServer *ioServer;
 
 private:
-    IOStatus OnWrite(int fd) { return IO_ERROR; }//实现IOHandle的纯虚函数
-    IOStatus OnError(int fd) { return IO_ERROR; }
+    IOStatus OnWrite(int fd) {
+        return IO_ERROR;
+    } //实现IOHandle的纯虚函数
+    IOStatus OnError(int fd) {
+        return IO_ERROR;
+    }
 
 private:
-    DECL_LOGGER(logger);
+    DECL_LOGGER(logger)
+    ;
 };
 
-class IOHandleConnect:public IOHandle
-{
+class IOHandleConnect: public IOHandle {
 public:
-    IOHandleConnect(IOServer *ioServer) : ioServer(ioServer) {}
+    IOHandleConnect(IOServer *ioServer) :
+            ioServer(ioServer) {
+    }
     IOStatus OnRead(int fd);
     IOStatus OnWrite(int fd);
 private:
-    IOStatus OnError(int fd) { return IO_ERROR; }
+    IOStatus OnError(int fd) {
+        return IO_ERROR;
+    }
 
 private:
     IOServer *ioServer;
 
 private:
-    DECL_LOGGER(logger);
+    DECL_LOGGER(logger)
+    ;
 };
 #endif /* IOSERVER_H_ */
